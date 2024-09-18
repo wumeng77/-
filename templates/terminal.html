@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SSH Terminal</title>
+    <style>
+        #terminal {
+            background-color: black;
+            color: green;
+            height: 400px;
+            overflow-y: scroll;
+            padding: 10px;
+            white-space: pre-wrap; /* 保持原有的换行和空格 */
+            font-family: monospace; /* 使用等宽字体以模拟终端 */
+        }
+        input, button {
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>SSH Terminal</h1>
+    <div id="terminal"></div>
+    <input type="text" id="command" placeholder="Enter command" style="width: 80%;">
+    <button onclick="sendCommand()">Send</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+        var prompt = '[root@localhost ~]# '; // 模拟真实终端提示符
+
+        // 正则表达式，用于清除 ANSI 转义字符
+        function removeAnsiCodes(text) {
+            const ansiRegex = /\x1b\[[0-9;]*m/g;
+            return text.replace(ansiRegex, '');
+        }
+
+        // 处理接收到的服务器消息
+        socket.on('response', function(data) {
+            var terminal = document.getElementById('terminal');
+
+            // 清除 ANSI 转义字符
+            var cleanOutput = removeAnsiCodes(data.result);
+
+            // 只显示服务器返回的结果，而不附加提示符
+            terminal.innerHTML += cleanOutput;
+            terminal.scrollTop = terminal.scrollHeight; // 自动滚动到最底部
+        });
+
+        // 发送命令
+        function sendCommand() {
+            var command = document.getElementById('command').value;
+            var terminal = document.getElementById('terminal');
+
+            // 显示输入的命令和提示符
+            terminal.innerHTML += '\n' + prompt + command + '\n';
+            socket.emit('execute_command', {command: command});
+            document.getElementById('command').value = ''; // 清空输入框
+        }
+    </script>
+</body>
+</html>
