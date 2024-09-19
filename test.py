@@ -15,7 +15,7 @@ sessions = {}
 def index():
     return render_template('index.html')
 
-@app.route('/connect', methods=['POST'])
+@app.route('/connect_to_host', methods=['POST'])
 def connect():
     ip_address = request.form['ip']
     username = request.form['username']
@@ -40,7 +40,11 @@ def connect():
 
 @app.route('/terminal')
 def terminal():
-    return render_template('terminal.html')
+    return render_template('/connect/terminal.html')
+
+@app.route('/connection')
+def connection():
+    return render_template('/connect/choose_connect.html')
 
 # 接收前端命令并执行
 
