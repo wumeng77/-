@@ -4,6 +4,7 @@ from flask import Flask, render_template, request, session, redirect, url_for
 from flask_socketio import SocketIO, emit
 import paramiko
 import os
+from to_db import get_hosts
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -44,7 +45,7 @@ def terminal():
 
 @app.route('/connection')
 def connection():
-    return render_template('/connect/choose_connect.html')
+    return render_template('/connect/choose_connect.html',hosts =get_hosts())
 
 # 接收前端命令并执行
 

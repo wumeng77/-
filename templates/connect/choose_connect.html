@@ -6,6 +6,8 @@
 </head>
 <body>
     <h1>SSH Connection</h1>
+
+    <!-- 表单部分 -->
     <form action="/connect_to_host" method="POST">
         <label for="ip">IP Address:</label>
         <input type="text" id="ip" name="ip" required>
@@ -18,5 +20,20 @@
         <br>
         <button type="submit">Connect</button>
     </form>
+    <h1>Choose a Connection</h1>
+
+    <!-- 显示从数据库读取的主机数据 -->
+    <table border="1">
+        <tr>
+            <th>IP Address</th>
+            <th>Username</th>
+        </tr>
+        {% for host in hosts %}
+        <tr>
+            <td>{{ host[0] }}</td>  <!-- IP 地址 -->
+            <td>{{ host[1] }}</td>  <!-- 用户名 -->
+        </tr>
+        {% endfor %}
+    </table>
 </body>
 </html>
