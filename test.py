@@ -5,15 +5,21 @@ from flask_socketio import SocketIO, emit
 import paramiko
 import os
 from to_db import get_hosts
+from to_redis import init_redis_session
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 socketio = SocketIO(app)
-
+init_redis_session(app)
 sessions = {}
 
 @app.route('/')
 def index():
+    try:
+        session['key'] = 'value'  # 尝试保存数据到会话中
+    except Exception as e:
+        return f"Session error: {e}"
+
     return render_template('index.html')
 
 @app.route('/connect_to_host', methods=['POST'])
