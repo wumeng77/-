@@ -10,6 +10,19 @@
             margin: 20px;
             cursor: pointer;
         }
+        #alive-hosts {
+            margin-top: 30px;
+        }
+        .host-status {
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        .online {
+            color: green;
+        }
+        .offline {
+            color: red;
+        }
     </style>
 </head>
 <body>
@@ -17,6 +30,41 @@
     <p>Here you can monitor and manage your servers, perform SSH connections, and more.</p>
 
     <button onclick="window.location.href='/connection'">Go to SSH Connection</button>
-    <button onclick="location.href='/monitor'">Monitor Hosts</button>
+    <button onclick="window.location.href='/monitor'">Monitor Hosts</button>
+    <button onclick="window.location.href='/add_host'">Add a Host</button>
+
+    <div id="alive-hosts">
+        <h2>Connected Hosts Status</h2>
+        <div id="host-list">
+            <!-- 主机状态将会动态加载到这里 -->
+        </div>
+    </div>
+
+    <script>
+        function fetchHostStatus() {
+            fetch('/alive_hosts')
+                .then(response => response.json())
+                .then(data => {
+                    const hostListDiv = document.getElementById('host-list');
+                    hostListDiv.innerHTML = '';  // 清空现有列表
+
+                    data.forEach(host => {
+                        const hostDiv = document.createElement('div');
+                        hostDiv.classList.add('host-status');
+                        hostDiv.classList.add(host.status.toLowerCase());
+                        hostDiv.textContent = `Host: ${host.ip} - Status: ${host.status}`;
+                        hostListDiv.appendChild(hostDiv);
+                    });
+                })
+                .catch(error => console.error('Error fetching host status:', error));
+        }
+
+        // 页面加载时获取主机状态
+        window.onload = function() {
+            fetchHostStatus();
+            // 每10秒自动更新一次主机状态
+            setInterval(fetchHostStatus, 10000);
+        };
+    </script>
 </body>
 </html>

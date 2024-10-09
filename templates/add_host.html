@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Host</title>
+    <style>
+        label, input {
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        input {
+            padding: 5px;
+        }
+        button {
+            font-size: 16px;
+            padding: 10px 20px;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Add a New Host</h2>
+    <form action="/add_host" method="POST">
+        <label for="ip">IP Address:</label><br>
+        <input type="text" id="ip" name="ip" required><br>
+
+        <label for="username">Username:</label><br>
+        <input type="text" id="username" name="username" required><br>
+
+        <label for="password">Password:</label><br>
+        <input type="password" id="password" name="password" required><br>
+
+        <button type="submit">Add Host</button>
+    </form>
+</body>
+</html>

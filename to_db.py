@@ -2,12 +2,11 @@ import sqlite3
 import os
 #
 # 数据库路径
-DB_PATH = os.path.join(os.path.dirname(__file__), 'hosts.db')
 
 def get_db_connection():
     """获取数据库连接"""
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = sqlite3.connect('hosts.db')
         return conn
     except sqlite3.Error as e:
         print(f"Error connecting to database: {e}")

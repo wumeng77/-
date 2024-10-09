@@ -1,10 +1,9 @@
 import time
-
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, render_template, request, session, redirect, url_for,jsonify
 from flask_socketio import SocketIO, emit
 import paramiko
 import os
-from to_db import get_hosts
+from to_db import get_hosts,insert_host
 from to_redis import init_redis_session
 
 app = Flask(__name__)
@@ -22,6 +21,19 @@ def index():
 
     return render_template('index.html')
 
+@app.route('/terminal')
+def terminal():
+    return render_template('/connect/terminal.html')
+
+@app.route('/connection')
+def connection():
+    return render_template('/connect/choose_connect.html',hosts =get_hosts())
+
+
+
+
+############
+# ssh连接模块
 @app.route('/connect_to_host', methods=['POST'])
 def connect():
     ip_address = request.form['ip']
@@ -44,17 +56,7 @@ def connect():
         return redirect(url_for('terminal'))
     except Exception as e:
         return f"Connection failed: {str(e)}"
-
-@app.route('/terminal')
-def terminal():
-    return render_template('/connect/terminal.html')
-
-@app.route('/connection')
-def connection():
-    return render_template('/connect/choose_connect.html',hosts =get_hosts())
-
-# 接收前端命令并执行
-
+    
 @socketio.on('execute_command')
 def handle_command(data):
     command = data['command'] + '\n'
@@ -78,6 +80,45 @@ def handle_command(data):
         emit('response', {'result': filtered_output})
     else:
         emit('response', {'result': 'SSH channel not established'})
+
+# 主机存活状态探测
+def is_host_alive(ip_address):
+    response = os.system(f"ping -c 1 {ip_address}")
+    return response == 0
+@app.route('/alive_hosts', methods=['GET'])
+def alive_hosts():
+    alive_hosts_list = []
+    
+    # 从数据库获取主机 IP 地址
+    hosts = get_hosts()  # 这应该返回一个 (IPADDR, USERNAME) 的列表
+
+    for host in hosts:
+        ip_address = host[0]  # 假设 host[0] 是 IP 地址
+        if is_host_alive(ip_address):
+            alive_hosts_list.append({'ip': ip_address, 'status': 'Online'})
+        else:
+            alive_hosts_list.append({'ip': ip_address, 'status': 'Offline'})
+
+    return jsonify(alive_hosts_list)
+
+
+# 添加主机到数据库中
+@app.route('/add_host', methods=['GET'])
+def add_host_page():
+    return render_template('add_host.html')
+
+# 处理表单提交，将主机信息插入数据库
+@app.route('/add_host', methods=['POST'])
+def add_host():
+    ip_address = request.form['ip']
+    username = request.form['username']
+    password = request.form['password']
+
+    # 插入主机信息到数据库
+    if insert_host((ip_address, username, password)):
+        return redirect(url_for('index'))  # 插入成功后返回首页
+    else:
+        return "Failed to add host."
 
 if __name__ == '__main__':
     socketio.run(app,host='0.0.0.0',port=5000, debug=True,allow_unsafe_werkzeug=True)
